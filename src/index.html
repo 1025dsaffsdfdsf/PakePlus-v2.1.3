@@ -1,32 +1,1777 @@
 <!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <link rel="stylesheet" href="styles.css" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>PakePlus App</title>
-        <script type="module" src="/main.js" defer></script>
-    </head>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>驻马店市纪委监委"量稳质高效好"自控平台</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #1a3a5f 0%, #2c5c8a 100%);
+            min-height: 100vh;
+            padding: 10px;
+            overflow-x: auto;
+        }
+        
+        .landscape-container {
+            min-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 95vh;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1a3a5f, #2c5c8a);
+            color: white;
+            padding: 15px 40px;
+            text-align: center;
+            border-bottom: 4px solid #e74c3c;
+            position: relative;
+            flex-shrink: 0;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #e74c3c, #3498db, #27ae60, #f39c12);
+        }
+        
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 8px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 15px;
+            padding: 20px;
+            flex: 1;
+            min-height: 0;
+        }
+        
+        .input-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .dashboard-section {
+            display: grid;
+            grid-template-rows: 280px 1fr;
+            gap: 15px;
+            min-height: 0;
+        }
+        
+        .top-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            height: 100%;
+            min-height: 0;
+        }
+        
+        .bottom-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 320px;
+            gap: 15px;
+            height: 100%;
+            min-height: 0;
+        }
+        
+        .chart-panel {
+            background: white;
+            padding: 20px 15px 15px 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            border: 1px solid #e9ecef;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+        
+        /* 分级统计柱状图特殊样式 */
+        .level-chart-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            flex: 1;
+            min-height: 0;
+        }
+        
+        .level-chart-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 12px;
+            background: #fafbfc;
+        }
+        
+        .level-chart-title {
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #1a3a5f;
+            font-size: 0.9em;
+            border-bottom: 1px solid #e74c3c;
+            padding-bottom: 5px;
+            flex-shrink: 0;
+        }
+        
+        .level-chart-canvas {
+            flex: 1;
+            min-height: 0;
+        }
+        
+        /* 四种形态分布特殊样式 */
+        .pie-chart-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            gap: 15px;
+        }
 
-    <body>
-        <main class="container">
-            <h1>Welcome to PakePlus</h1>
-            <form class="row" id="greet-form">
-                <input id="inputValue" placeholder="Enter a something..." />
-            </form>
-            <div class="resultBox">
-                <span>result: </span>
-                <span id="result"></span>
+        .pie-chart-wrapper {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .breakdown-charts {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .breakdown-item {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .breakdown-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .breakdown-bar-container {
+            height: 16px;
+            background: #ecf0f1;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .breakdown-bar {
+            height: 100%;
+            display: flex;
+        }
+
+        .bar-segment {
+            height: 100%;
+            transition: all 0.3s ease;
+        }
+
+        .bar-segment.county {
+            background: #3498db;
+        }
+
+        .bar-segment.township {
+            background: #27ae60;
+        }
+
+        .bar-segment.other {
+            background: #f39c12;
+        }
+
+        .breakdown-percentages {
+            display: flex;
+            justify-content: space-between;
+            font-size: 9px;
+            color: #7f8c8d;
+            margin-top: 2px;
+        }
+
+        .percentage-item {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .color-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .color-county {
+            background: #3498db;
+        }
+
+        .color-township {
+            background: #27ae60;
+        }
+
+        .color-other {
+            background: #f39c12;
+        }
+        
+        .time-selector {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid #3498db;
+            flex-shrink: 0;
+        }
+        
+        .time-selector h3 {
+            color: #1a3a5f;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        
+        .time-inputs {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .time-inputs select {
+            padding: 8px 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 12px;
+            background: white;
+            flex: 1;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+            flex-shrink: 0;
+        }
+        
+        .form-group h3 {
+            color: #1a3a5f;
+            margin-bottom: 12px;
+            padding-bottom: 6px;
+            border-bottom: 2px solid #e74c3c;
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+        
+        .input-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            padding: 6px 10px;
+            background: white;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            font-size: 12px;
+        }
+        
+        .input-row:hover {
+            background: #f0f7ff;
+        }
+        
+        .input-row label {
+            flex: 1;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .input-row input {
+            width: 70px;
+            padding: 6px 8px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 12px;
+            font-weight: bold;
+            transition: all 0.3s;
+            background: #fff;
+        }
+        
+        .input-row input:focus {
+            border-color: #3498db;
+            outline: none;
+            box-shadow: 0 0 6px rgba(52, 152, 219, 0.3);
+        }
+        
+        /* 年度总览区域 */
+        .annual-overview {
+            background: white;
+            padding: 20px 15px 15px 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            border: 1px solid #e9ecef;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        
+        .overview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            flex-shrink: 0;
+        }
+        
+        .overview-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 12px;
+            flex-shrink: 0;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            border-left: 3px solid #3498db;
+        }
+        
+        .stat-card h4 {
+            color: #2c3e50;
+            margin-bottom: 6px;
+            font-size: 11px;
+        }
+        
+        .stat-value {
+            font-size: 16px;
+            font-weight: bold;
+            color: #e74c3c;
+        }
+        
+        .stat-change {
+            font-size: 10px;
+            margin-top: 3px;
+        }
+        
+        .change-positive { color: #27ae60; }
+        .change-negative { color: #e74c3c; }
+        
+        .overview-trend {
+            flex: 1;
+            min-height: 0;
+            margin-top: 10px;
+        }
+        
+        /* 星级评价区域 */
+        .star-ratings-panel {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            border: 1px solid #e9ecef;
+            margin-top: 15px;
+        }
+        
+        .star-rating-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 12px;
+        }
+        
+        .star-rating-item:last-child {
+            border-bottom: none;
+        }
+        
+        .star-label {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .star-display {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .star-icon {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .star-icon.green { color: #27ae60; }
+        .star-icon.yellow { color: #f39c12; }
+        .star-icon.red { color: #e74c3c; }
+        
+        .change-indicator {
+            font-size: 10px;
+            padding: 4px 8px;
+            border-radius: 10px;
+            font-weight: bold;
+            min-width: 55px;
+            text-align: center;
+        }
+        
+        .change-up { background: #e74c3c; color: white; }
+        .change-down { background: #27ae60; color: white; }
+        .change-stable { background: #3498db; color: white; }
+        
+        .sub-group {
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 8px 0;
+            border-left: 3px solid #3498db;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            flex-shrink: 0;
+        }
+        
+        .sub-group h4 {
+            color: #2c5c8a;
+            margin-bottom: 8px;
+            font-size: 1em;
+            font-weight: bold;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-shrink: 0;
+        }
+        
+        button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #27ae60, #229954);
+            color: white;
+        }
+        
+        .btn-warning {
+            background: linear-gradient(135deg, #e67e22, #d35400);
+            color: white;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        .chart-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+        
+        .chart-title {
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #1a3a5f;
+            font-size: 1em;
+            border-bottom: 1px solid #e74c3c;
+            padding-bottom: 8px;
+            flex-shrink: 0;
+        }
+        
+        .chart-canvas {
+            flex: 1;
+            min-height: 0;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 10px;
+            background: #fafbfc;
+        }
+        
+        .stats-panel {
+            background: white;
+            padding: 20px 15px 15px 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            border: 1px solid #e9ecef;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        
+        .stats-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+        }
+        
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
+        .stat-item:last-child {
+            border-bottom: none;
+        }
+        
+        .stat-item span:first-child {
+            color: #2c3e50;
+            font-weight: bold;
+        }
+        
+        .stat-item span:last-child {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        /* 时间周期选择器 */
+        .time-period {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .time-period button {
+            padding: 6px 12px;
+            font-size: 10px;
+            flex: none;
+            border-radius: 15px;
+        }
+        
+        .time-period .active {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            transform: scale(1.05);
+        }
+
+        /* 星级说明 */
+        .star-legend {
+            background: white;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 15px;
+            font-size: 10px;
+            flex-shrink: 0;
+            border: 1px solid #e9ecef;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-bottom: 3px;
+        }
+
+        /* 右侧面板容器 */
+        .right-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            height: 100%;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 1200px) {
+            body {
+                padding: 5px;
+            }
+            
+            .landscape-container {
+                min-width: 1200px;
+            }
+            
+            .main-content {
+                grid-template-columns: 280px 1fr;
+                gap: 12px;
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="landscape-container">
+        <div class="header">
+            <h1>驻马店市纪委监委"量稳质高效好"自控平台</h1>
+        </div>
+        
+        <div class="main-content">
+            <!-- 数据输入区域 -->
+            <div class="input-section">
+                <div class="time-selector">
+                    <h3>📅 数据录入时间</h3>
+                    <div class="time-inputs">
+                        <select id="selectYear">
+                            <!-- 年份选项由JavaScript动态生成 -->
+                        </select>
+                        <select id="selectMonth">
+                            <option value="1">1月</option>
+                            <option value="2">2月</option>
+                            <option value="3">3月</option>
+                            <option value="4">4月</option>
+                            <option value="5">5月</option>
+                            <option value="6">6月</option>
+                            <option value="7">7月</option>
+                            <option value="8">8月</option>
+                            <option value="9">9月</option>
+                            <option value="10">10月</option>
+                            <option value="11">11月</option>
+                            <option value="12">12月</option>
+                        </select>
+                    </div>
+                    <div id="currentTime" style="margin-top: 8px; font-weight: bold; color: #2c5c8a; font-size: 11px;"></div>
+                </div>
+
+                <div class="form-group">
+                    <h3>📊 核心指标数据</h3>
+                    
+                    <div class="input-row">
+                        <label>立案数量：</label>
+                        <input type="number" id="caseCount" min="0" value="50">
+                    </div>
+                    
+                    <div class="input-row">
+                        <label>处分数量：</label>
+                        <input type="number" id="punishmentCount" min="0" value="48">
+                    </div>
+                    
+                    <div class="input-row">
+                        <label>留置数量：</label>
+                        <input type="number" id="detentionCount" min="0" value="25">
+                    </div>
+                    
+                    <div class="input-row">
+                        <label>立案后不处分：</label>
+                        <input type="number" id="noPunishmentAfterCase" min="0" value="5">
+                    </div>
+                    
+                    <div class="input-row">
+                        <label>留置后未移送：</label>
+                        <input type="number" id="noTransferAfterDetention" min="0" value="3">
+                    </div>
+                    
+                    <div class="input-row">
+                        <label>主要对象未移送：</label>
+                        <input type="number" id="noTransferMainTarget" min="0" value="1">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <h3>🎯 分级分类数据</h3>
+                    
+                    <div class="sub-group">
+                        <h4>立案数量细分</h4>
+                        <div class="input-row">
+                            <label>县处级：</label>
+                            <input type="number" id="caseCountyLevel" min="0" value="15">
+                        </div>
+                        <div class="input-row">
+                            <label>乡科级：</label>
+                            <input type="number" id="caseTownshipLevel" min="0" value="25">
+                        </div>
+                        <div class="input-row">
+                            <label>其他：</label>
+                            <input type="number" id="caseOtherLevel" min="0" value="10">
+                        </div>
+                    </div>
+
+                    <div class="sub-group">
+                        <h4>处分数量细分</h4>
+                        <div class="input-row">
+                            <label>县处级：</label>
+                            <input type="number" id="punishmentCountyLevel" min="0" value="12">
+                        </div>
+                        <div class="input-row">
+                            <label>乡科级：</label>
+                            <input type="number" id="punishmentTownshipLevel" min="0" value="20">
+                        </div>
+                        <div class="input-row">
+                            <label>其他：</label>
+                            <input type="number" id="punishmentOtherLevel" min="0" value="8">
+                        </div>
+                    </div>
+
+                    <div class="sub-group">
+                        <h4>留置数量细分</h4>
+                        <div class="input-row">
+                            <label>县处级：</label>
+                            <input type="number" id="detentionCountyLevel" min="0" value="10">
+                        </div>
+                        <div class="input-row">
+                            <label>乡科级：</label>
+                            <input type="number" id="detentionTownshipLevel" min="0" value="12">
+                        </div>
+                        <div class="input-row">
+                            <label>其他：</label>
+                            <input type="number" id="detentionOtherLevel" min="0" value="3">
+                        </div>
+                    </div>
+
+                    <div class="sub-group">
+                        <h4>四种形态级别分布</h4>
+                        <div class="input-row">
+                            <label>第一种形态-县处级：</label>
+                            <input type="number" id="type1County" min="0" value="8">
+                        </div>
+                        <div class="input-row">
+                            <label>第一种形态-乡科级：</label>
+                            <input type="number" id="type1Township" min="0" value="10">
+                        </div>
+                        <div class="input-row">
+                            <label>第一种形态-其他：</label>
+                            <input type="number" id="type1Other" min="0" value="2">
+                        </div>
+                        <div class="input-row">
+                            <label>第二种形态-县处级：</label>
+                            <input type="number" id="type2County" min="0" value="5">
+                        </div>
+                        <div class="input-row">
+                            <label>第二种形态-乡科级：</label>
+                            <input type="number" id="type2Township" min="0" value="8">
+                        </div>
+                        <div class="input-row">
+                            <label>第二种形态-其他：</label>
+                            <input type="number" id="type2Other" min="0" value="2">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="btn-group">
+                    <button class="btn-primary" onclick="generateCharts()">📈 生成图表</button>
+                    <button class="btn-success" onclick="exportData()">💾 导出数据</button>
+                    <button class="btn-warning" onclick="resetData()">🔄 重置</button>
+                </div>
+
+                <div class="star-legend">
+                    <div class="legend-item"><span class="star-icon green">★</span> 绿星：±10%内（稳定）</div>
+                    <div class="legend-item"><span class="star-icon yellow">★</span> 黄星：±10-30%（关注）</div>
+                    <div class="legend-item"><span class="star-icon red">★</span> 红星：超±30%（重点）</div>
+                </div>
             </div>
-            <div class="invokeBox">
-                <button id="openUrl">open_url_browser</button>
-                <button id="openUrlNew">open_url_new</button>
-                <button id="runCommand">run_command</button>
-                <button id="downloadFile">download_file</button>
-                <button id="getExeDir">get_exe_dir</button>
-                <button id="getEnvVar">get_env_var</button>
-                <button id="findPort">find_port</button>
+            
+            <!-- 仪表盘区域 -->
+            <div class="dashboard-section">
+                <!-- 顶部行：年度总览和趋势分析 -->
+                <div class="top-row">
+                    <!-- 年度数据总览 -->
+                    <div class="annual-overview">
+                        <div class="overview-header">
+                            <div class="chart-title">📊 年度数据总览 - <span id="currentOverviewYear">2024年</span></div>
+                            <select id="overviewYearSelect" onchange="updateAnnualOverview()" style="padding: 3px 6px; border: 1px solid #ddd; border-radius: 3px; font-size: 10px;">
+                                <!-- 年份选项由JavaScript动态生成 -->
+                            </select>
+                        </div>
+                        
+                        <div class="overview-stats">
+                            <div class="stat-card">
+                                <h4>年度立案总数</h4>
+                                <div class="stat-value" id="annualCases">0</div>
+                                <div class="stat-change change-positive" id="annualCasesChange">+0% 同比</div>
+                            </div>
+                            <div class="stat-card">
+                                <h4>年度处分总数</h4>
+                                <div class="stat-value" id="annualPunishments">0</div>
+                                <div class="stat-change change-positive" id="annualPunishmentsChange">+0% 同比</div>
+                            </div>
+                            <div class="stat-card">
+                                <h4>年度留置总数</h4>
+                                <div class="stat-value" id="annualDetentions">0</div>
+                                <div class="stat-change change-positive" id="annualDetentionsChange">+0% 同比</div>
+                            </div>
+                        </div>
+                        
+                        <div class="overview-trend">
+                            <canvas id="annualTrendChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- 趋势分析 -->
+                    <div class="chart-panel">
+                        <div class="chart-title">📈 立案、留置、处分趋势分析</div>
+                        <div class="time-period">
+                            <button onclick="changeTimePeriod('monthly')" class="btn-primary active">月度</button>
+                            <button onclick="changeTimePeriod('quarterly')" class="btn-primary">季度</button>
+                            <button onclick="changeTimePeriod('yearly')" class="btn-primary">年度</button>
+                        </div>
+                        <div class="chart-canvas">
+                            <canvas id="trendChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 底部行：三个图表面板 -->
+                <div class="bottom-row">
+                    <!-- 分级统计柱状图 -->
+                    <div class="chart-panel">
+                        <div class="chart-title">📊 分级统计柱状图</div>
+                        <div class="level-chart-container">
+                            <div class="level-chart-item">
+                                <div class="level-chart-title">立案数量分级统计</div>
+                                <div class="level-chart-canvas">
+                                    <canvas id="caseLevelChart"></canvas>
+                                </div>
+                            </div>
+                            <div class="level-chart-item">
+                                <div class="level-chart-title">处分数量分级统计</div>
+                                <div class="level-chart-canvas">
+                                    <canvas id="punishmentLevelChart"></canvas>
+                                </div>
+                            </div>
+                            <div class="level-chart-item">
+                                <div class="level-chart-title">留置数量分级统计</div>
+                                <div class="level-chart-canvas">
+                                    <canvas id="detentionLevelChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 四种形态分布 -->
+                    <div class="chart-panel">
+                        <div class="chart-title">🎯 四种形态分布</div>
+                        <div class="pie-chart-content">
+                            <div class="pie-chart-wrapper">
+                                <canvas id="pieChart"></canvas>
+                            </div>
+                            
+                            <!-- 级别分布横向柱状图 -->
+                            <div class="breakdown-charts">
+                                <div class="breakdown-item">
+                                    <div class="breakdown-label">
+                                        <span>第一种形态</span>
+                                        <span id="type1Total">20人</span>
+                                    </div>
+                                    <div class="breakdown-bar-container">
+                                        <div class="breakdown-bar" id="type1Bar">
+                                            <div class="bar-segment county" style="width: 40%"></div>
+                                            <div class="bar-segment township" style="width: 50%"></div>
+                                            <div class="bar-segment other" style="width: 10%"></div>
+                                        </div>
+                                    </div>
+                                    <div class="breakdown-percentages">
+                                        <div class="percentage-item">
+                                            <div class="color-indicator color-county"></div>
+                                            <span>县处级: 40%</span>
+                                        </div>
+                                        <div class="percentage-item">
+                                            <div class="color-indicator color-township"></div>
+                                            <span>乡科级: 50%</span>
+                                        </div>
+                                        <div class="percentage-item">
+                                            <div class="color-indicator color-other"></div>
+                                            <span>其他: 10%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="breakdown-item">
+                                    <div class="breakdown-label">
+                                        <span>第二种形态</span>
+                                        <span id="type2Total">15人</span>
+                                    </div>
+                                    <div class="breakdown-bar-container">
+                                        <div class="breakdown-bar" id="type2Bar">
+                                            <div class="bar-segment county" style="width: 33%"></div>
+                                            <div class="bar-segment township" style="width: 53%"></div>
+                                            <div class="bar-segment other" style="width: 14%"></div>
+                                        </div>
+                                    </div>
+                                    <div class="breakdown-percentages">
+                                        <div class="percentage-item">
+                                            <div class="color-indicator color-county"></div>
+                                            <span>县处级: 33%</span>
+                                        </div>
+                                        <div class="percentage-item">
+                                            <div class="color-indicator color-township"></div>
+                                            <span>乡科级: 53%</span>
+                                        </div>
+                                        <div class="percentage-item">
+                                            <div class="color-indicator color-other"></div>
+                                            <span>其他: 14%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="breakdown-item">
+                                    <div class="breakdown-label">
+                                        <span>第三种形态</span>
+                                        <span id="type3Total">8人</span>
+                                    </div>
+                                    <div class="breakdown-bar-container">
+                                        <div class="breakdown-bar" id="type3Bar">
+                                            <div class="bar-segment county" style="width: 50%"></div>
+                                            <div class="bar-segment township" style="width: 38%"></div>
+                                            <div class="bar-segment other" style="width: 12%"></div>
+                                        </div>
+                                    </div>
+                                    <div class="breakdown-percentages">
+                                        <div class="percentage-item">
+                                            <div class="color-indicator color-county"></div>
+                                            <span>县处级: 50%</span>
+                                        </div>
+                                        <div class="percentage-item">
+                                            <div class="color-indicator color-township"></div>
+                                            <span>乡科级: 38%</span>
+                                        </div>
+                                        <div class="percentage-item">
+                                            <div class="color-indicator color-other"></div>
+                                            <span>其他: 12%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="breakdown-item">
+                                    <div class="breakdown-label">
+                                        <span>第四种形态</span>
+                                        <span id="type4Total">5人</span>
+                                    </div>
+                                    <div class="breakdown-bar-container">
+                                        <div class="breakdown-bar" id="type4Bar">
+                                            <div class="bar-segment county" style="width: 60%"></div>
+                                            <div class="bar-segment township" style="width: 20%"></div>
+                                            <div class="bar-segment other" style="width: 20%"></div>
+                                        </div>
+                                    </div>
+                                    <div class="breakdown-percentages">
+                                        <div class="percentage-item">
+                                            <div class="color-indicator color-county"></div>
+                                            <span>县处级: 60%</span>
+                                        </div>
+                                        <div class="percentage-item">
+                                            <div class="color-indicator color-township"></div>
+                                            <span>乡科级: 20%</span>
+                                        </div>
+                                        <div class="percentage-item">
+                                            <div class="color-indicator color-other"></div>
+                                            <span>其他: 20%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 星级评价区域 -->
+                            <div class="star-ratings-panel">
+                                <div class="chart-title">⭐ 关键指标星级评价</div>
+                                <div class="star-rating-item">
+                                    <div class="star-label">立案数量评价</div>
+                                    <div class="star-display">
+                                        <span class="star-icon green" id="caseStar">★</span>
+                                        <span class="change-indicator change-stable" id="caseChange">持平</span>
+                                    </div>
+                                </div>
+                                <div class="star-rating-item">
+                                    <div class="star-label">处分数量评价</div>
+                                    <div class="star-display">
+                                        <span class="star-icon green" id="punishmentStar">★</span>
+                                        <span class="change-indicator change-up" id="punishmentChange">+4.2%</span>
+                                    </div>
+                                </div>
+                                <div class="star-rating-item">
+                                    <div class="star-label">留置数量评价</div>
+                                    <div class="star-display">
+                                        <span class="star-icon yellow" id="detentionStar">★</span>
+                                        <span class="change-indicator change-down" id="detentionChange">-8.3%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 右侧面板：统计指标 -->
+                    <div class="right-panel">
+                        <!-- 关键统计指标 -->
+                        <div class="stats-panel">
+                            <div class="chart-title">🔍 关键统计指标</div>
+                            <div class="stats-content">
+                                <div class="stat-item">
+                                    <span>总立案数量：</span>
+                                    <span id="totalCases">50</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span>总处分数量：</span>
+                                    <span id="totalPunishments">48</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span>总留置数量：</span>
+                                    <span id="totalDetentions">25</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span>留置率：</span>
+                                    <span id="detentionRate">50.0%</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span>处分率：</span>
+                                    <span id="punishmentRate">96.0%</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span>办案质效指数：</span>
+                                    <span id="efficiencyIndex">88.5</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span>县处级留置占比：</span>
+                                    <span id="countyDetentionRate">40.0%</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span>乡科级留置占比：</span>
+                                    <span id="townshipDetentionRate">48.0%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </main>
-    </body>
+        </div>
+    </div>
+
+    <script>
+        let trendChart, caseLevelChart, punishmentLevelChart, detentionLevelChart, pieChart, annualTrendChart;
+        let currentTimePeriod = 'monthly';
+        let currentYear = 2024;
+        let currentMonth = 1;
+        
+        // 模拟年度数据
+        const annualData = {
+            '2024': {
+                cases: 650,
+                punishments: 600,
+                detentions: 320,
+                monthly: [45, 52, 48, 55, 58, 62, 65, 60, 55, 50, 48, 52]
+            },
+            '2023': {
+                cases: 620,
+                punishments: 580,
+                detentions: 300,
+                monthly: [42, 48, 52, 50, 55, 58, 62, 58, 53, 48, 45, 49]
+            },
+            '2022': {
+                cases: 580,
+                punishments: 520,
+                detentions: 280,
+                monthly: [38, 42, 45, 48, 52, 55, 58, 55, 50, 45, 42, 50]
+            },
+            '2021': {
+                cases: 520,
+                punishments: 480,
+                detentions: 250,
+                monthly: [35, 38, 42, 45, 48, 52, 55, 52, 48, 42, 40, 43]
+            },
+            '2020': {
+                cases: 480,
+                punishments: 450,
+                detentions: 220,
+                monthly: [32, 35, 38, 42, 45, 48, 52, 48, 45, 40, 38, 37]
+            }
+        };
+        
+        // 初始化年份选择器
+        function initializeYearSelector() {
+            const yearSelect = document.getElementById('selectYear');
+            const overviewYearSelect = document.getElementById('overviewYearSelect');
+            const currentYear = new Date().getFullYear();
+            
+            // 清空现有选项
+            yearSelect.innerHTML = '';
+            overviewYearSelect.innerHTML = '';
+            
+            // 添加从2023年到2099年的选项
+            for (let year = 2023; year <= 2099; year++) {
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = year + '年';
+                if (year === currentYear) {
+                    option.selected = true;
+                }
+                yearSelect.appendChild(option);
+            }
+            
+            // 为年度总览添加年份选项（包含历史数据年份）
+            for (let year = 2020; year <= currentYear; year++) {
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = year + '年';
+                if (year === currentYear) {
+                    option.selected = true;
+                }
+                overviewYearSelect.appendChild(option);
+            }
+        }
+        
+        // 更新年度数据总览
+        function updateAnnualOverview() {
+            const selectedYear = document.getElementById('overviewYearSelect').value;
+            const data = annualData[selectedYear];
+            
+            if (!data) return;
+            
+            // 更新标题
+            document.getElementById('currentOverviewYear').textContent = selectedYear + '年';
+            
+            // 更新统计数据
+            document.getElementById('annualCases').textContent = data.cases;
+            document.getElementById('annualPunishments').textContent = data.punishments;
+            document.getElementById('annualDetentions').textContent = data.detentions;
+            
+            // 计算同比变化
+            const prevYearData = annualData[selectedYear - 1];
+            if (prevYearData) {
+                const casesChange = ((data.cases - prevYearData.cases) / prevYearData.cases * 100).toFixed(1);
+                const punishmentsChange = ((data.punishments - prevYearData.punishments) / prevYearData.punishments * 100).toFixed(1);
+                const detentionsChange = ((data.detentions - prevYearData.detentions) / prevYearData.detentions * 100).toFixed(1);
+                
+                document.getElementById('annualCasesChange').textContent = 
+                    `${casesChange > 0 ? '+' : ''}${casesChange}% 同比`;
+                document.getElementById('annualCasesChange').className = 
+                    `stat-change ${casesChange >= 0 ? 'change-positive' : 'change-negative'}`;
+                
+                document.getElementById('annualPunishmentsChange').textContent = 
+                    `${punishmentsChange > 0 ? '+' : ''}${punishmentsChange}% 同比`;
+                document.getElementById('annualPunishmentsChange').className = 
+                    `stat-change ${punishmentsChange >= 0 ? 'change-positive' : 'change-negative'}`;
+                
+                document.getElementById('annualDetentionsChange').textContent = 
+                    `${detentionsChange > 0 ? '+' : ''}${detentionsChange}% 同比`;
+                document.getElementById('annualDetentionsChange').className = 
+                    `stat-change ${detentionsChange >= 0 ? 'change-positive' : 'change-negative'}`;
+            }
+            
+            // 更新年度趋势图
+            generateAnnualTrendChart(selectedYear);
+        }
+        
+        // 生成年度趋势图
+        function generateAnnualTrendChart(year) {
+            const data = annualData[year];
+            
+            if (annualTrendChart) annualTrendChart.destroy();
+            
+            const annualCtx = document.getElementById('annualTrendChart').getContext('2d');
+            annualTrendChart = new Chart(annualCtx, {
+                type: 'line',
+                data: {
+                    labels: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
+                    datasets: [{
+                        label: '月度立案数量',
+                        data: data.monthly,
+                        borderColor: '#3498db',
+                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                font: {
+                                    size: 10
+                                }
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                font: {
+                                    size: 10
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                font: {
+                                    size: 10
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // 模拟历史数据
+        const historicalData = {
+            monthly: {
+                labels: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
+                cases: [45, 52, 48, 55, 58, 62, 65, 60, 55, 50, 48, 52],
+                detentions: [20, 22, 25, 28, 30, 32, 35, 30, 28, 25, 22, 25],
+                punishments: [40, 45, 42, 48, 50, 55, 58, 52, 48, 45, 42, 48]
+            },
+            quarterly: {
+                labels: ['第一季度', '第二季度', '第三季度', '第四季度'],
+                cases: [145, 175, 180, 150],
+                detentions: [67, 90, 93, 70],
+                punishments: [130, 158, 160, 140]
+            },
+            yearly: {
+                labels: ['2020年', '2021年', '2022年', '2023年', '2024年'],
+                cases: [480, 520, 580, 620, 650],
+                detentions: [220, 250, 280, 300, 320],
+                punishments: [450, 480, 520, 580, 600]
+            }
+        };
+
+        // 模拟上月数据
+        const lastMonthData = {
+            cases: 48,
+            punishments: 46,
+            detentions: 27
+        };
+
+        // 更新四种形态级别分布图表
+        function updateBreakdownCharts() {
+            const type1County = parseInt(document.getElementById('type1County').value) || 0;
+            const type1Township = parseInt(document.getElementById('type1Township').value) || 0;
+            const type1Other = parseInt(document.getElementById('type1Other').value) || 0;
+            
+            const type2County = parseInt(document.getElementById('type2County').value) || 0;
+            const type2Township = parseInt(document.getElementById('type2Township').value) || 0;
+            const type2Other = parseInt(document.getElementById('type2Other').value) || 0;
+            
+            const type3Total = 8; // 模拟数据
+            const type4Total = 5; // 模拟数据
+            
+            // 计算第一种形态
+            const type1Total = type1County + type1Township + type1Other;
+            const type1CountyPercent = type1Total > 0 ? (type1County / type1Total * 100).toFixed(0) : 0;
+            const type1TownshipPercent = type1Total > 0 ? (type1Township / type1Total * 100).toFixed(0) : 0;
+            const type1OtherPercent = type1Total > 0 ? (type1Other / type1Total * 100).toFixed(0) : 0;
+            
+            // 计算第二种形态
+            const type2Total = type2County + type2Township + type2Other;
+            const type2CountyPercent = type2Total > 0 ? (type2County / type2Total * 100).toFixed(0) : 0;
+            const type2TownshipPercent = type2Total > 0 ? (type2Township / type2Total * 100).toFixed(0) : 0;
+            const type2OtherPercent = type2Total > 0 ? (type2Other / type2Total * 100).toFixed(0) : 0;
+            
+            // 更新第一种形态
+            document.getElementById('type1Total').textContent = type1Total + '人';
+            document.getElementById('type1Bar').innerHTML = `
+                <div class="bar-segment county" style="width: ${type1CountyPercent}%"></div>
+                <div class="bar-segment township" style="width: ${type1TownshipPercent}%"></div>
+                <div class="bar-segment other" style="width: ${type1OtherPercent}%"></div>
+            `;
+            document.querySelector('#type1Bar').nextElementSibling.innerHTML = `
+                <div class="percentage-item">
+                    <div class="color-indicator color-county"></div>
+                    <span>县处级: ${type1CountyPercent}%</span>
+                </div>
+                <div class="percentage-item">
+                    <div class="color-indicator color-township"></div>
+                    <span>乡科级: ${type1TownshipPercent}%</span>
+                </div>
+                <div class="percentage-item">
+                    <div class="color-indicator color-other"></div>
+                    <span>其他: ${type1OtherPercent}%</span>
+                </div>
+            `;
+            
+            // 更新第二种形态
+            document.getElementById('type2Total').textContent = type2Total + '人';
+            document.getElementById('type2Bar').innerHTML = `
+                <div class="bar-segment county" style="width: ${type2CountyPercent}%"></div>
+                <div class="bar-segment township" style="width: ${type2TownshipPercent}%"></div>
+                <div class="bar-segment other" style="width: ${type2OtherPercent}%"></div>
+            `;
+            document.querySelector('#type2Bar').nextElementSibling.innerHTML = `
+                <div class="percentage-item">
+                    <div class="color-indicator color-county"></div>
+                    <span>县处级: ${type2CountyPercent}%</span>
+                </div>
+                <div class="percentage-item">
+                    <div class="color-indicator color-township"></div>
+                    <span>乡科级: ${type2TownshipPercent}%</span>
+                </div>
+                <div class="percentage-item">
+                    <div class="color-indicator color-other"></div>
+                    <span>其他: ${type2OtherPercent}%</span>
+                </div>
+            `;
+        }
+        
+        function updateTimeDisplay() {
+            currentYear = parseInt(document.getElementById('selectYear').value);
+            currentMonth = parseInt(document.getElementById('selectMonth').value);
+            document.getElementById('currentTime').textContent = 
+                `当前录入：${currentYear}年${currentMonth}月`;
+            calculateStarRatings();
+        }
+        
+        function calculateStarRatings() {
+            const currentCases = parseInt(document.getElementById('caseCount').value) || 0;
+            const currentPunishments = parseInt(document.getElementById('punishmentCount').value) || 0;
+            const currentDetentions = parseInt(document.getElementById('detentionCount').value) || 0;
+            
+            // 计算变化率
+            const caseChangeRate = ((currentCases - lastMonthData.cases) / lastMonthData.cases * 100);
+            const punishmentChangeRate = ((currentPunishments - lastMonthData.punishments) / lastMonthData.punishments * 100);
+            const detentionChangeRate = ((currentDetentions - lastMonthData.detentions) / lastMonthData.detentions * 100);
+            
+            // 更新星级显示
+            updateStarDisplay('case', caseChangeRate, currentCases, lastMonthData.cases);
+            updateStarDisplay('punishment', punishmentChangeRate, currentPunishments, lastMonthData.punishments);
+            updateStarDisplay('detention', detentionChangeRate, currentDetentions, lastMonthData.detentions);
+        }
+        
+        function updateStarDisplay(type, changeRate, current, last) {
+            const starElement = document.getElementById(type + 'Star');
+            const changeElement = document.getElementById(type + 'Change');
+            const absChangeRate = Math.abs(changeRate);
+            
+            // 确定星级颜色
+            if (absChangeRate <= 10) {
+                starElement.className = 'star-icon green';
+            } else if (absChangeRate <= 30) {
+                starElement.className = 'star-icon yellow';
+            } else {
+                starElement.className = 'star-icon red';
+            }
+            
+            // 更新变化指示器
+            if (changeRate > 0) {
+                changeElement.className = 'change-indicator change-up';
+                changeElement.textContent = `+${changeRate.toFixed(1)}%`;
+            } else if (changeRate < 0) {
+                changeElement.className = 'change-indicator change-down';
+                changeElement.textContent = `${changeRate.toFixed(1)}%`;
+            } else {
+                changeElement.className = 'change-indicator change-stable';
+                changeElement.textContent = '持平';
+            }
+        }
+        
+        function getInputData() {
+            return {
+                caseCount: parseInt(document.getElementById('caseCount').value) || 0,
+                punishmentCount: parseInt(document.getElementById('punishmentCount').value) || 0,
+                detentionCount: parseInt(document.getElementById('detentionCount').value) || 0,
+                noPunishmentAfterCase: parseInt(document.getElementById('noPunishmentAfterCase').value) || 0,
+                noTransferAfterDetention: parseInt(document.getElementById('noTransferAfterDetention').value) || 0,
+                noTransferMainTarget: parseInt(document.getElementById('noTransferMainTarget').value) || 0,
+                caseCountyLevel: parseInt(document.getElementById('caseCountyLevel').value) || 0,
+                caseTownshipLevel: parseInt(document.getElementById('caseTownshipLevel').value) || 0,
+                caseOtherLevel: parseInt(document.getElementById('caseOtherLevel').value) || 0,
+                punishmentCountyLevel: parseInt(document.getElementById('punishmentCountyLevel').value) || 0,
+                punishmentTownshipLevel: parseInt(document.getElementById('punishmentTownshipLevel').value) || 0,
+                punishmentOtherLevel: parseInt(document.getElementById('punishmentOtherLevel').value) || 0,
+                detentionCountyLevel: parseInt(document.getElementById('detentionCountyLevel').value) || 0,
+                detentionTownshipLevel: parseInt(document.getElementById('detentionTownshipLevel').value) || 0,
+                detentionOtherLevel: parseInt(document.getElementById('detentionOtherLevel').value) || 0,
+                type1County: parseInt(document.getElementById('type1County').value) || 0,
+                type1Township: parseInt(document.getElementById('type1Township').value) || 0,
+                type1Other: parseInt(document.getElementById('type1Other').value) || 0,
+                type2County: parseInt(document.getElementById('type2County').value) || 0,
+                type2Township: parseInt(document.getElementById('type2Township').value) || 0,
+                type2Other: parseInt(document.getElementById('type2Other').value) || 0,
+                year: currentYear,
+                month: currentMonth
+            };
+        }
+        
+        function calculateTotals(data) {
+            const totalCases = data.caseCountyLevel + data.caseTownshipLevel + data.caseOtherLevel;
+            const totalPunishments = data.punishmentCountyLevel + data.punishmentTownshipLevel + data.punishmentOtherLevel;
+            const totalDetentions = data.detentionCount || 0;
+            
+            const detentionRate = totalCases > 0 ? ((data.detentionCount / totalCases) * 100).toFixed(1) : 0;
+            const punishmentRate = totalCases > 0 ? ((totalPunishments / totalCases) * 100).toFixed(1) : 0;
+            
+            const countyDetentionRate = totalDetentions > 0 ? ((data.detentionCountyLevel / totalDetentions) * 100).toFixed(1) : 0;
+            const townshipDetentionRate = totalDetentions > 0 ? ((data.detentionTownshipLevel / totalDetentions) * 100).toFixed(1) : 0;
+            
+            const efficiencyIndex = (
+                (punishmentRate * 0.4) + 
+                ((100 - (data.noPunishmentAfterCase / totalCases * 100 || 0)) * 0.3) +
+                85 * 0.3
+            ).toFixed(1);
+            
+            return {
+                totalCases,
+                totalPunishments,
+                totalDetentions,
+                detentionRate,
+                punishmentRate,
+                efficiencyIndex,
+                countyDetentionRate,
+                townshipDetentionRate
+            };
+        }
+        
+        function updateStatistics(totals) {
+            document.getElementById('totalCases').textContent = totals.totalCases;
+            document.getElementById('totalPunishments').textContent = totals.totalPunishments;
+            document.getElementById('totalDetentions').textContent = totals.totalDetentions;
+            document.getElementById('detentionRate').textContent = totals.detentionRate + '%';
+            document.getElementById('punishmentRate').textContent = totals.punishmentRate + '%';
+            document.getElementById('efficiencyIndex').textContent = totals.efficiencyIndex;
+            document.getElementById('countyDetentionRate').textContent = totals.countyDetentionRate + '%';
+            document.getElementById('townshipDetentionRate').textContent = totals.townshipDetentionRate + '%';
+        }
+        
+        function changeTimePeriod(period) {
+            currentTimePeriod = period;
+            
+            document.querySelectorAll('.time-period button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            generateTrendChart();
+        }
+        
+        function generateTrendChart() {
+            const data = historicalData[currentTimePeriod];
+            
+            if (trendChart) trendChart.destroy();
+            
+            const trendCtx = document.getElementById('trendChart').getContext('2d');
+            trendChart = new Chart(trendCtx, {
+                type: 'line',
+                data: {
+                    labels: data.labels,
+                    datasets: [
+                        {
+                            label: '立案数量',
+                            data: data.cases,
+                            borderColor: '#3498db',
+                            backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.4
+                        },
+                        {
+                            label: '留置数量',
+                            data: data.detentions,
+                            borderColor: '#e74c3c',
+                            backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.4
+                        },
+                        {
+                            label: '处分数量',
+                            data: data.punishments,
+                            borderColor: '#27ae60',
+                            backgroundColor: 'rgba(39, 174, 96, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                font: {
+                                    size: 10
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function generateLevelCharts(data) {
+            // 销毁现有图表
+            if (caseLevelChart) caseLevelChart.destroy();
+            if (punishmentLevelChart) punishmentLevelChart.destroy();
+            if (detentionLevelChart) detentionLevelChart.destroy();
+            
+            // 生成立案数量分级统计图
+            const caseLevelCtx = document.getElementById('caseLevelChart').getContext('2d');
+            caseLevelChart = new Chart(caseLevelCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['县处级', '乡科级', '其他'],
+                    datasets: [{
+                        label: '立案数量',
+                        data: [data.caseCountyLevel, data.caseTownshipLevel, data.caseOtherLevel],
+                        backgroundColor: '#3498db',
+                        borderColor: '#2980b9',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                font: {
+                                    size: 9
+                                }
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                font: {
+                                    size: 9
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+            
+            // 生成处分数量分级统计图
+            const punishmentLevelCtx = document.getElementById('punishmentLevelChart').getContext('2d');
+            punishmentLevelChart = new Chart(punishmentLevelCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['县处级', '乡科级', '其他'],
+                    datasets: [{
+                        label: '处分数量',
+                        data: [data.punishmentCountyLevel, data.punishmentTownshipLevel, data.punishmentOtherLevel],
+                        backgroundColor: '#27ae60',
+                        borderColor: '#229954',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                font: {
+                                    size: 9
+                                }
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                font: {
+                                    size: 9
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+            
+            // 生成留置数量分级统计图
+            const detentionLevelCtx = document.getElementById('detentionLevelChart').getContext('2d');
+            detentionLevelChart = new Chart(detentionLevelCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['县处级', '乡科级', '其他'],
+                    datasets: [{
+                        label: '留置数量',
+                        data: [data.detentionCountyLevel, data.detentionTownshipLevel, data.detentionOtherLevel],
+                        backgroundColor: '#e74c3c',
+                        borderColor: '#c0392b',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                font: {
+                                    size: 9
+                                }
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                font: {
+                                    size: 9
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+        
+        function generateCharts() {
+            const data = getInputData();
+            const totals = calculateTotals(data);
+            updateStatistics(totals);
+            calculateStarRatings();
+            updateTimeDisplay();
+            updateBreakdownCharts();
+            
+            if (pieChart) pieChart.destroy();
+            
+            generateTrendChart();
+            generateLevelCharts(data);
+            
+            const pieCtx = document.getElementById('pieChart').getContext('2d');
+            pieChart = new Chart(pieCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['第一种形态', '第二种形态', '第三种形态', '第四种形态'],
+                    datasets: [{
+                        data: [20, 15, 8, 5],
+                        backgroundColor: ['#2ecc71', '#3498db', '#f39c12', '#e74c3c']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                font: {
+                                    size: 10
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = Math.round((value / total) * 100);
+                                    return `${label}: ${value}人 (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function exportData() {
+            const data = getInputData();
+            const totals = calculateTotals(data);
+            
+            const exportData = {
+                ...data,
+                ...totals,
+                exportTime: new Date().toLocaleString('zh-CN'),
+                platform: "驻马店市纪委监委'量稳质高效好'自控平台"
+            };
+            
+            const dataStr = JSON.stringify(exportData, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(dataBlob);
+            link.download = `驻马店纪委监委数据_${currentYear}年${currentMonth}月.json`;
+            link.click();
+            
+            alert('数据导出成功！');
+        }
+        
+        function resetData() {
+            if (confirm('确定要重置所有数据吗？')) {
+                const inputs = document.querySelectorAll('input[type="number"]');
+                inputs.forEach(input => input.value = '0');
+                generateCharts();
+            }
+        }
+        
+        // 初始化
+        window.onload = function() {
+            initializeYearSelector();
+            updateTimeDisplay();
+            updateAnnualOverview();
+            generateCharts();
+            
+            // 为所有输入框添加事件监听
+            const inputs = document.querySelectorAll('input[type="number"]');
+            inputs.forEach(input => {
+                if (input.id.includes('type1') || input.id.includes('type2')) {
+                    input.addEventListener('input', updateBreakdownCharts);
+                }
+                if (input.id.includes('Count') || input.id.includes('Count')) {
+                    input.addEventListener('input', calculateStarRatings);
+                }
+            });
+            
+            document.getElementById('selectYear').addEventListener('change', updateTimeDisplay);
+            document.getElementById('selectMonth').addEventListener('change', updateTimeDisplay);
+        };
+    </script>
+</body>
 </html>
